@@ -10,49 +10,52 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import jwt
 from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 from corsheaders.defaults import default_headers
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env_path = BASE_DIR / '.env'
+load_dotenv(dotenv_path=env_path)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d4)rh5esoy-lo-3-yzadbgmx)n4jiz^crx*(-1y=l4v^wp9^_x'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ["uncaringly-lawless-bernarda.ngrok-free.dev", "localhost", "127.0.0.1"]
+ngrok_url = os.getenv('NGROK_URL')
 
-env_path = BASE_DIR / 'variaveis_de_ambiente.env'
-load_dotenv(dotenv_path=env_path)
-
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"] + [ngrok_url]
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.contenttypes',
-    'django.contrib.staticfiles',
-    'django.contrib.auth',
-    'rest_framework',
-    'corsheaders',
-    'django_seed'
-]
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'rest_framework',
+        'corsheaders',
+    ]
+
+if DEBUG:
+    INSTALLED_APPS += ['django_seed']
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -66,13 +69,14 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
             ],
         },
     },
 ]
 
 WSGI_APPLICATION = 'greenUpCore.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
@@ -125,22 +129,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-MIGRATION_MODULES = {
-    'auth': None,
-    'contenttypes': None,
-}
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'app.authentication.authentication_drf.JWTAuthentication',  # Sua classe que você vai criar
+        'app.authentication.authentication_drf.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'app.authentication.permission.JWTRoutePermission',  # Ou outra permissão padrão
+        'app.authentication.permission.JWTRoutePermission',
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
@@ -156,6 +150,8 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECURITY_KEY')
 
@@ -170,13 +166,8 @@ CPF_HMAC_KEY = os.getenv('CPF_HMAC_KEY')
 
 EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
 EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = os.getenv('EMAIL_PORT')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT'))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-FRONTEND_URL = "http://localhost:5173"
-
-DATABASE_ROUTERS = ['app.db_router.IgnoreAuthContenttypesRouter']
-
