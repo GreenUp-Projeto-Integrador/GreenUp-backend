@@ -43,6 +43,7 @@ INSTALLED_APPS = [
         'django.contrib.staticfiles',
         'rest_framework',
         'corsheaders',
+        'usuarios',
     ]
 
 if DEBUG:
@@ -129,17 +130,17 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'app.authentication.authentication_drf.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'app.authentication.permission.JWTRoutePermission',
-    ],
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-    ],
-}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'app.authentication.authentication_drf.JWTAuthentication',
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'app.authentication.permission.JWTRoutePermission',
+#     ],
+#     'DEFAULT_PARSER_CLASSES': [
+#         'rest_framework.parsers.JSONParser',
+#     ],
+# }
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "ngrok-skip-browser-warning",
