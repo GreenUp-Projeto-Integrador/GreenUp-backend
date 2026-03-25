@@ -14,3 +14,4 @@
 .env
 
 usuarios/migrations/
+app/migrations/
