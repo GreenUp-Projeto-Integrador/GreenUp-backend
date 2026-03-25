@@ -7,6 +7,12 @@ class CriarEnderecoSerializer(serializers.ModelSerializer):
         model = Endereco
         fields = '__all__'
 
+class ListarEnderecoEspecificoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Endereco
+        fields = '__all__'
+
 class EnderecoResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
