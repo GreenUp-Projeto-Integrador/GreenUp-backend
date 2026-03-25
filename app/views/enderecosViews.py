@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from app.serializers.enderecosSerializers import CriarEnderecoSerializer, EnderecoResponseSerializer
-from app.services.enderecosServices import criar_endereco_service
+from app.serializers.enderecosSerializers import CriarEnderecoSerializer, EnderecoResponseSerializer, ListarEnderecoEspecificoSerializer
+from app.services.enderecosServices import criar_endereco_service, listar_endereco_especifico_service
 
 class CriarEnderecoView(APIView):
 
@@ -26,6 +26,34 @@ class CriarEnderecoView(APIView):
                 "message": "Endereço criado com sucesso",
                 "endereco": endereco_serializer.data,
             }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": "Um erro inesperado ocorreu",
+                "errors": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ListarEnderecoEspecificoView(APIView):
+
+    @staticmethod
+    def get(request, pk):
+        try:
+            endereco = listar_endereco_especifico_service(pk)
+
+            if not endereco:
+                return Response({
+                    "success": False,
+                    "message": "Endereço não encontrado"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            endereco_serializer = ListarEnderecoEspecificoSerializer(endereco)
+
+            return Response({
+                "success": True,
+                "message": "Endereço encontrado com sucesso",
+                "endereco": endereco_serializer.data,
+            })
 
         except Exception as e:
             return Response({
