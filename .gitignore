@@ -10,7 +10,7 @@
 /httpRequests/
 
 .idea/
-.venv/
+venv/
 .env
 .DS_Store
 docs/
