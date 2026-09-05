@@ -12,5 +12,4 @@
 .idea/
 .venv/
 .env
-
-usuarios/migrations/
+.DS_Store
