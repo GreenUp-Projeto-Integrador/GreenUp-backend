@@ -94,3 +94,44 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+# ───────────────────────── PRODUÇÃO ─────────────────────────
+# Controlado por variáveis de ambiente 
+
+# 1) Arquivos estáticos (CSS/JS do /admin) servidos pelo próprio Django via WhiteNoise
+MIDDLEWARE.insert(1, "whitenoise.middleware.WhiteNoiseMiddleware")
+STATIC_ROOT = BASE_DIR / "staticfiles"
+WHITENOISE_USE_FINDERS = DEBUG  # em desenvolvimento serve direto dos pacotes, sem collectstatic
+
+# 2) Atrás do proxy HTTPS da hospedagem
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = [i.strip() for i in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if i.strip()]
+
+# 3) Banco PostgreSQL: SSL (o Neon exige POSTGRES_SSLMODE=require) e checagem da conexão
+#    (bancos "serverless" suspendem quando ficam parados e derrubam conexões antigas)
+if DATABASES["default"]["ENGINE"].endswith("postgresql"):
+    DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+    if os.getenv("POSTGRES_SSLMODE"):
+        DATABASES["default"]["OPTIONS"] = {"sslmode": os.getenv("POSTGRES_SSLMODE")}
+
+# 4) Fotos em armazenamento S3-compatível (ex.: Cloudflare R2). Só ativa se MEDIA_BUCKET_NAME existir;
+#    sem a variável, as fotos continuam na pasta media/ como hoje.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
+if os.getenv("MEDIA_BUCKET_NAME"):
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "bucket_name": os.getenv("MEDIA_BUCKET_NAME"),
+            "endpoint_url": os.getenv("MEDIA_ENDPOINT_URL"),
+            "access_key": os.getenv("MEDIA_ACCESS_KEY_ID"),
+            "secret_key": os.getenv("MEDIA_SECRET_ACCESS_KEY"),
+            "region_name": os.getenv("MEDIA_REGION", "auto"),
+            "signature_version": "s3v4",
+            "querystring_auth": True,    # bucket privado: o link da foto é assinado e expira
+            "querystring_expire": 3600,  # 1 hora (o link é gerado de novo a cada consulta)
+            "file_overwrite": False,
+        },
+    }

@@ -14,3 +14,11 @@ venv/
 .env
 .DS_Store
 docs/
+.venv/
+__pycache__/
+*.py[cod]
+db.sqlite3
+media/
+staticfiles/
+.env.*
+!.env.example
